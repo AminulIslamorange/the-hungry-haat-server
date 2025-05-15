@@ -1,7 +1,7 @@
 const express=require('express');
 const app=express();
 const cors=require('cors');
-const { CURSOR_FLAGS } = require('mongodb');
+const { CURSOR_FLAGS, ObjectId } = require('mongodb');
 const port=process.env.PORT || 5000;
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -33,6 +33,8 @@ async function run() {
 
     const menuCollection=client.db('hungryHaat').collection('menu');
     const reviewsCollection=client.db('hungryHaat').collection('reviews');
+    const cartCollection=client.db('hungryHaat').collection('carts');
+
 
     // for all menu item get api
 
@@ -43,6 +45,29 @@ async function run() {
     app.get('/reviews',async(req,res)=>{
         const result=await reviewsCollection.find().toArray();
         res.send(result)
+    });
+    // carts related api hare
+    app.post('/carts',async(req,res)=>{
+      const cartItem=req.body;
+      const result=await cartCollection.insertOne(cartItem);
+      res.send(result);
+    });
+
+  
+    app.get('/carts', async (req, res) => {
+      const email=req.query.email;
+      const query={email:email}
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/carts/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await cartCollection.deleteOne(query);
+      res.send(result);
+
+
     })
 
 
